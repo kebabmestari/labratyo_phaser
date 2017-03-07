@@ -5,8 +5,42 @@
         <title>hello phaser!</title>
         <!--Include Phaser framework-->
         <script src="phaser.min.js"></script>
+        <style>
+            * {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+            html, body {
+                width: 100%;
+            }
+            canvas {
+                border: 1px solid black;
+            }
+            #canvasWrapper {
+                box-shadow: 2px 2px 7px black;
+            }
+            .wrapper {
+                display: flex;
+            }
+            .hor {
+                flex-flow: row nowrap;
+                justify-content: center;
+            }
+            .ver {
+                flex-flow: column nowrap;
+                justify-content: space-around;
+            }
+        </style>
     </head>
     <body>
+
+    <div class="wrapper hor">
+        <div class="wrapper ver">
+            <h2 style="text-align: center">Intro</h2>
+            <div id="canvasWrapper"></div>
+        </div>
+    </div>
 
     <!--Include intro source-->
     <script type="text/javascript" src="source.js">
