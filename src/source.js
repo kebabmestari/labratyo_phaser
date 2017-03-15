@@ -33,7 +33,8 @@ window.onload = function () {
      * Load static assets into Phaser objects
      */
     function preload() {
-        game.load.image('background', 'phaser.png');
+        game.load.image('background', 'phaser.png');      
+        game.load.audio('song', ['Overworld.mp3']);
     }
 
     /**
@@ -67,6 +68,9 @@ window.onload = function () {
         bg[1] = game.add.sprite(screenW, 0, 'background');
         // create the letter text objects
         prepareText();
+        // play song
+        music = game.add.audio('song');
+        music.play();
     }
 
     /**
