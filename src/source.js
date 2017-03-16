@@ -16,7 +16,7 @@ const
     textPos = screenW + 50, // initial text position
     textGap = 30; // gap between letters
 
-const demoText = 'Moikka Anna :~))';
+const demoText = 'Oispa kaljaa';
 
 // main 'module'
 window.onload = function () {
@@ -29,11 +29,17 @@ window.onload = function () {
     // array of text objects for each letter
     var textObjs = [];
 
+    // data about the slice positions
+    var sliceData;
+    // sliced images
+    var slicePics;
+
     /**
      * Load static assets into Phaser objects
      */
     function preload() {
-        game.load.image('background', 'phaser.png');
+        game.load.image('background', 'marko.jpg');
+        game.load.image('wavepic', 'kuva.png');
     }
 
     /**
@@ -65,6 +71,10 @@ window.onload = function () {
         // bgs
         bg[0] = game.add.sprite(0, 0, 'background');
         bg[1] = game.add.sprite(screenW, 0, 'background');
+
+        // load and initialize the wave image
+        [slicePics, sliceData] = initWave(game, "wavepic", sliceData);
+
         // create the letter text objects
         prepareText();
     }
@@ -75,6 +85,7 @@ window.onload = function () {
      */
     function update() {
         scrollBg();
+        updateWave(slicePics, sliceData);
         renderText();
     }
 
@@ -88,7 +99,7 @@ window.onload = function () {
         textObjs.forEach((t) => {
             t.updatePosition(textSpeed);
         });
-        if(textObjs[textObjs.length - 1].textObj.x < -100) {
+        if (textObjs[textObjs.length - 1].textObj.x < -100) {
             resetText(textPos);
         }
     }
@@ -122,7 +133,8 @@ function Letter(x, y, deg, letter, game) {
     // phaser object
     this.textObj = game.add.text(x, y, letter, {
         font: '40px monospace',
-        weight: 'bold'
+        weight: 'bold',
+        fill: 'white'
     });
 
     // update letter movement
@@ -131,9 +143,79 @@ function Letter(x, y, deg, letter, game) {
         this.textObj.x -= speed;
         // update sin function
         this.angle += 5;
-
         // update vertical pos
         this.textObj.y = this.y + Math.floor(Math.sin(angle(this.angle)) * WAVEHEIGHT);
+    }
+}
+
+/**
+ * Wave effect functions
+ */
+
+function initWave(game, pic) {
+    // algortihm from phaser website
+
+    // create a intermediatory tween object representing wave
+    var tween = game.add.tween({x: 50})
+        .to(
+            {x: screenW - 150},   // endpoint
+            randInt(1000, 20000),       // length
+            "Bounce.easeInOut", // animation style
+            true,   // autoStart
+            0,      // delay
+            -1,     // repeat
+            true    // yoyo
+        );
+
+    var sliceData = tween.generateData(60); // generate 60 frames from tween
+
+    // height of individual 'bar'
+    var barHeight = randInt(1,10);
+
+    var sprites = game.add.spriteBatch();
+
+    slices = [];
+
+    var picture = game.cache.getImage(pic);
+
+    var width = picture.width,
+        height = picture.height;
+
+    var numBars = Math.floor(picture.height / barHeight);
+
+    // array into which the sliced bars are collected
+    var slicedPics = [];
+
+    for (var y = 0; y < numBars; y++) {
+        var star = game.make.sprite(50, 100 + (y * barHeight), 'wavepic');
+
+        star.crop(new Phaser.Rectangle(0, y * barHeight, width, barHeight));
+
+        star.ox = star.x;
+
+        // wrap the position around
+        star.cx = game.math.wrap(y * 1, 0, sliceData.length - 1);
+
+        star.anchor.set(0.5);
+        sprites.addChild(star);
+
+        slicedPics.push(star);
+    }
+
+    return [slicedPics, sliceData];
+
+}
+
+/**
+ * Update wave animation
+ */
+function updateWave(pics, data) {
+    for (var i = 0; i < pics.length ; i++) {
+        pics[i].x = pics[i].ox + data[pics[i].cx].x;
+        pics[i].cx++;
+        if(pics[i].cx >= data.length) {
+            pics[i].cx = 0;
+        }
     }
 }
 
@@ -157,5 +239,5 @@ function angle(degrees) {
  * @returns {number} random integer from given range
  */
 function randInt(min, max) {
-    return ~~ Math.random() * (max - min) + min;
+    return ~~(Math.random() * (max - min) + min);
 }
